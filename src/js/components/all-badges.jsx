@@ -119,6 +119,10 @@ var Badge = React.createClass({
 
   expandYear: function expandYear(category, e) {
     var year = parseInt(e.target.innerHTML);
+    if (!year) {
+      return;
+    }
+
     var data = allBadges().shouldRender.val();
 
     data[category][year] = !data[category][year];
