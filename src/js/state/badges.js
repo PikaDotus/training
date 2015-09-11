@@ -9,7 +9,8 @@ var defaultValue = {
   loaded: EntityStates.NOT_LOADED,
   shouldRender: null,
   categories: null,
-  students: null
+  students: null,
+  loadedYears: false
 };
 
 Context.initialize('badgesState', function () {

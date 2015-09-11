@@ -17,34 +17,23 @@ var Badge = React.createClass({
 
   render: function () {
     if (allBadges().loaded.val() !== EntityStates.LOADED
-      || !allBadges().categories.val()) {
+      || !allBadges().shouldRender.val()) {
+      return <LoadingPage />;
+    }
+
+    if (!allBadges().loadedYears.val()) {
+      this.loadYears();
       return <LoadingPage />;
     }
 
     var badges     = allBadges().badges.val();
     var categories = allBadges().categories.val();
-    var allYears   = _.uniq(_.map(badges, function (badge) {
-      return badge.year;
-    })).sort();
 
     return <main className="badges">
       <div className="row">
         <br />
         <br />
         <br />
-
-        <div className="small-1 columns">
-          <label htmlFor="change-year" className="right inline">Year:</label>
-        </div>
-        <div className="small-3 columns">
-          <label>
-            <select id="change-year" onChange={this.switchYear} defaultValue={new Date().getFullYear()}>
-              {_.map(allYears, function (year) {
-                return <option value={year} key={'year-' + year}>{year}</option>;
-               })}
-            </select>
-          </label>
-        </div>
 
         <input type="text" name="search" ref="search" placeholder="Search here..."
                onChange={this.updateSearch} autoFocus />
@@ -57,21 +46,12 @@ var Badge = React.createClass({
   getInitialState: function () {
     return {
       searchString: '',
-      desiredYear:  new Date().getFullYear(),
     };
   },
 
   componentDidMount: function componentDidMount () {
     this.loadBadges();
     this.loadCategories();
-  },
-
-  switchYear: function switchYear (e) {
-    var selected = _.find(e.target.options, function (option) {
-      return option.selected;
-    });
-
-    this.setState({desiredYear: parseInt(selected.value)});
   },
 
   updateSearch: function updateSearch (e) {
@@ -108,12 +88,8 @@ var Badge = React.createClass({
   },
 
   renderCategories: function renderCategories (badges, categories) {
-    badges = _.select(badges, function (badge) {
-      return badge.year === this.state.desiredYear;
-    }, this);
-
     return _.map(categories, function (category) {
-      if (!allBadges().val().shouldRender || !allBadges().val().shouldRender[category]) {
+      if (!allBadges().val().shouldRender || !allBadges().val().shouldRender[category].any) {
         return <div key={Math.random()}>
           <div><a onClick={this.expandCategory}><h2>{category} ...</h2></a></div>
           <hr />
@@ -124,9 +100,7 @@ var Badge = React.createClass({
         <div><a onClick={this.expandCategory}><h2>{category}:</h2></a></div>
         <div>
           <a href={'/category/' + category}><h3 className="subheader">See all {category}</h3></a>
-          <ul className="small-block-grid-6 thumbnail-list">
-            {this.renderBadgesByCategory(badges, category)}
-          </ul>
+          {this.renderBadgesByCategory(badges, category)}
         </div>
         <hr />
       </div>;
@@ -137,7 +111,17 @@ var Badge = React.createClass({
     var category = e.target.innerHTML;
 
     var data = allBadges().shouldRender.val();
-    data[category] = !data[category];
+    data[category].any = !data[category].any;
+
+    allBadges().shouldRender.set(data);
+    this.forceUpdate();
+  },
+
+  expandYear: function expandYear(category, e) {
+    var year = parseInt(e.target.innerHTML);
+    var data = allBadges().shouldRender.val();
+
+    data[category][year] = !data[category][year];
 
     allBadges().shouldRender.set(data);
     this.forceUpdate();
@@ -162,22 +146,44 @@ var Badge = React.createClass({
     return str.length > n ? str.substr(0, n) + '...' : str;
   },
 
-  renderBadgesByCategory: function renderBadgesByCategory (badges, category) {
-    category = category.toLowerCase();
+  renderBadges: function renderBadges (badges, year) {
+    return _.map(badges, function (badge) {
+      if (badge.year === parseInt(year)) {
+        return this.renderBadge(badge);
+      }
+    }, this);
+  },
 
-    var self = this;
-    var badges = _.map(badges, function (badge) {
-      if (badge.category && badge.category.toLowerCase() === category) {
-        return self.renderBadge(badge);
+  renderBadgesByCategory: function renderBadgesByCategory (badges, category) {
+    var years = _.omit(allBadges().val().shouldRender[category], 'any');
+
+    badges = _.map(badges, function (badge) {
+      if (badge.category && badge.category.toLowerCase() === category.toLowerCase()) {
+        return badge;
       }
     });
 
-    return badges;
+    return _.map(years, function (shouldRender, year) {
+      if (!shouldRender) {
+        return <div key={Math.random()}>
+          <div><a onClick={this.expandYear.bind(this, category)}><h3>{year} ...</h3></a></div>
+        </div>;
+      }
+
+      return <div key={Math.random()}>
+        <div><a onClick={this.expandYear.bind(this, category)}><h3>{year}:</h3></a></div>
+        <div>
+          <ul className="small-block-grid-6 thumbnail-list">
+            {this.renderBadges(badges, parseInt(year))}
+          </ul>
+        </div>
+      </div>;
+    }, this);
   },
 
   loadBadges: function loadBadges () {
     if (allBadges().loaded.val() === EntityStates.LOADED) {
-      return false;
+      return true;
     }
 
     allBadges().loaded.set(EntityStates.LOADING);
@@ -191,25 +197,33 @@ var Badge = React.createClass({
 
       allBadges().badges.set(badges);
       allBadges().loaded.set(EntityStates.LOADED);
+
+      return true;
     });
   },
 
   loadCategories: function loadCategories () {
     var setShouldRender = function (categories) {
+      if (allBadges().shouldRender.val()) {
+        return true;
+      }
+
       allBadges().shouldRender.set({});
       _.forEach(categories, function (category) {
         var data = allBadges().shouldRender.val();
-        data[category] = false;
+        data[category] = {any: false};
         allBadges().shouldRender.set(data);
       });
+
+      return true;
     }
 
     if (allBadges().categories.val()) {
       if (allBadges().shouldRender.val()) {
-        return false;
+        return true;
       }
 
-      setShouldRender(allBadges().categories.val());
+      return setShouldRender(allBadges().categories.val());
     }
 
     Badges.categories(function (response) {
@@ -220,8 +234,29 @@ var Badge = React.createClass({
       var categories = response.categories;
 
       allBadges().categories.set(categories);
-      setShouldRender(categories);
+      return setShouldRender(categories);
     });
+  },
+
+  loadYears: function loadYears () {
+    if (allBadges().loadedYears.val()) {
+      return;
+    }
+
+    var allYears = _.uniq(_.map(allBadges().badges.val(), function (badge) {
+      return badge.year;
+    })).sort();
+
+    _.forEach(allYears, function (year) {
+      _.forEach(allBadges().categories.val(), function (category) {
+        var newVal = allBadges().shouldRender.val();
+        newVal[category][year] = false;
+
+        allBadges().shouldRender.set(newVal);
+      });
+    });
+
+    allBadges().loadedYears.set(true);
   },
 });
 
