@@ -147,7 +147,7 @@ var Badge = React.createClass({
   },
 
   renderBadges: function renderBadges (badges, year) {
-    return _.map(badges, function (badge) {
+    return _.map(_.compact(badges), function (badge) {
       if (badge.year === parseInt(year)) {
         return this.renderBadge(badge);
       }
@@ -243,17 +243,22 @@ var Badge = React.createClass({
       return;
     }
 
-    var allYears = _.uniq(_.map(allBadges().badges.val(), function (badge) {
-      return badge.year;
-    })).sort();
+    _.forEach(allBadges().categories.val(), function (category) {
+      var newVal = allBadges().shouldRender.val();
 
-    _.forEach(allYears, function (year) {
-      _.forEach(allBadges().categories.val(), function (category) {
-        var newVal = allBadges().shouldRender.val();
+      var allYears = _.uniq(_.map(
+        _.select(allBadges().badges.val(), function (badge) {
+          return badge.category === category;
+        }),
+        function (badge) {
+          return badge.year;
+        })).sort();
+
+      _.forEach(allYears, function (year) {
         newVal[category][year] = false;
+      })
 
-        allBadges().shouldRender.set(newVal);
-      });
+      allBadges().shouldRender.set(newVal);
     });
 
     allBadges().loadedYears.set(true);
