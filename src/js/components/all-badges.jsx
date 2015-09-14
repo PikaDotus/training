@@ -119,7 +119,7 @@ var Badge = React.createClass({
 
   expandYear: function expandYear(category, e) {
     var year = parseInt(e.target.innerHTML);
-    console.log(e.target.innerHTML);
+
     if (!year) {
       // mis-click of some sort? who knows.
       if (e.target.innerHTML !== 'Perpetual') {
