@@ -25,14 +25,13 @@ var NewBadge = React.createClass({
               <hr />
               <div className="small-9 large-6 column">
                 <p>Category:</p>
-                <p>Year:</p>
+                <p>Year (0 = perpetual):</p>
                 <p>Verifiers:</p>
               </div>
               <div className="small-3 large-6 column">
                 <input type="text" name="category" ref="category"
                   placeholder="Badge category" />
-                <input type="number" name="year" ref="year" max={new Date().getFullYear()} min={2010}
-                  placeholder={new Date().getFullYear()} />
+                <input type="number" name="year" ref="year" placeholder={new Date().getFullYear()} />
                 <textarea placeholder="Who can check this badge off?" rows="2"
                   ref="verifiers" />
               </div>

@@ -43,14 +43,13 @@ var EditBadge = React.createClass({
               <hr />
               <div className="large-6 column">
                 <p>Category:</p>
-                <p>Year:</p>
+                <p>Year (0 = perpetual):</p>
                 <p>Verifiers:</p>
               </div>
               <div className="large-6 column">
                 <input type="text" name="category" ref="category"
                   placeholder="Main badge category" defaultValue={badge.category} />
-                <input type="number" name="year" ref="year" max={new Date().getFullYear} min={2010}
-                  defaultValue={badge.year} />
+                <input type="number" name="year" ref="year" defaultValue={badge.year} />
                 <textarea placeholder="Who can check this badge off?" rows="2"
                   ref="verifiers" defaultValue={badge.verifiers} />
               </div>

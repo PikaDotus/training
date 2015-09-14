@@ -59,7 +59,7 @@ var Badge = React.createClass({
 
               <div className="small-3 large-6 column">
                 <p>{badge.category}</p>
-                <p>{badge.year}</p>
+                <p>{(badge.year === 0) ? 'Perpetual' : badge.year}</p>
                 <p>{badge.verifiers}</p>
               </div>
 

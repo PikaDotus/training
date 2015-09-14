@@ -119,8 +119,14 @@ var Badge = React.createClass({
 
   expandYear: function expandYear(category, e) {
     var year = parseInt(e.target.innerHTML);
+    console.log(e.target.innerHTML);
     if (!year) {
-      return;
+      // mis-click of some sort? who knows.
+      if (e.target.innerHTML !== 'Perpetual') {
+        return;
+      }
+
+      year = 0;
     }
 
     var data = allBadges().shouldRender.val();
@@ -168,14 +174,18 @@ var Badge = React.createClass({
     });
 
     return _.map(years, function (shouldRender, year) {
+      if (parseInt(year) === 0) {
+        var label = 'Perpetual';
+      }
+
       if (!shouldRender) {
         return <div key={Math.random()}>
-          <div><a onClick={this.expandYear.bind(this, category)}><h3>{year} ...</h3></a></div>
+          <div><a onClick={this.expandYear.bind(this, category)}><h3>{label || year} ...</h3></a></div>
         </div>;
       }
 
       return <div key={Math.random()}>
-        <div><a onClick={this.expandYear.bind(this, category)}><h3>{year}:</h3></a></div>
+        <div><a onClick={this.expandYear.bind(this, category)}><h3>{label || year}:</h3></a></div>
         <div>
           <ul className="small-block-grid-6 thumbnail-list">
             {this.renderBadges(badges, parseInt(year))}
