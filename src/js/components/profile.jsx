@@ -82,6 +82,10 @@ var Profile = React.createClass({
               <label>
                 <select id="change-year" onChange={this.switchYear} defaultValue={new Date().getFullYear()}>
                   {_.map(allYears, function (year) {
+                    if (year === 0) {
+                      return <option value={year} key={'year-' + year}>Perpetual</option>;
+                    }
+
                     return <option value={year} key={'year-' + year}>{year}</option>;
                    }, this)}
                 </select>
