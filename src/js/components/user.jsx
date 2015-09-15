@@ -26,6 +26,7 @@ var Profile = React.createClass({
 
     return {
       showUnearned: query().showUnearned ? true : false,
+      desiredYear:  new Date().getFullYear(),
     };
   },
 
@@ -40,8 +41,16 @@ var Profile = React.createClass({
 
     var targetBadges    = userState().badge_relations.val();
     var user            = userState().user.val();
-    var candidateBadges = allBadges().badges.val();
     var categories      = allBadges().categories.val();
+    var badges          = allBadges().badges.val();
+
+    var allYears = _.uniq(_.map(badges, function (badge) {
+      return badge.year;
+    })).sort();
+
+    var candidateBadges = _.select(badges, function (badge) {
+      return badge.year === this.state.desiredYear;
+    }, this);
 
     return <main className="user">
       <div className="row">
@@ -56,9 +65,26 @@ var Profile = React.createClass({
             : null}
           <hr />
           <h2>BADGES</h2>
-          <a onClick={this.toggleUnearned}>
-            {'Show ' + (this.state.showUnearned ? 'earned' : 'unearned')}
-          </a>
+
+          <div className="row">
+            <div className="small-1 columns">
+              <label htmlFor="change-year" className="right inline">Year:</label>
+            </div>
+            <div className="small-3 columns end">
+              <label>
+                <select id="change-year" onChange={this.switchYear} defaultValue={new Date().getFullYear()}>
+                  {_.map(allYears, function (year) {
+                    if (year === 0) {
+                      return <option value={year} key={'year-' + year}>Perpetual</option>;
+                    }
+
+                    return <option value={year} key={'year-' + year}>{year}</option>;
+                   }, this)}
+                </select>
+              </label>
+            </div>
+          </div>
+
           <Categories
             targetBadges={targetBadges}
             categories={categories}
@@ -106,6 +132,14 @@ var Profile = React.createClass({
     loadCategories.categories();
 
     this.loadUser();
+  },
+
+  switchYear: function switchYear (e) {
+    var selected = _.find(e.target.options, function (option) {
+      return option.selected;
+    });
+
+    this.setState({desiredYear: parseInt(selected.value)});
   },
 
   toggleUnearned: function toggleUnearned () {
