@@ -7,7 +7,7 @@ var EntityStates = require('../lib/entity-states.js');
 var defaultValue = {
   badges: null,
   loaded: EntityStates.NOT_LOADED,
-  shouldRender: null,
+  shouldRender: {},
   categories: null,
   students: null,
   loadedYears: false

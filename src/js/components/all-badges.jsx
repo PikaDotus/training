@@ -259,6 +259,9 @@ var Badge = React.createClass({
 
     _.forEach(allBadges().categories.val(), function (category) {
       var newVal = allBadges().shouldRender.val();
+      if (!newVal[category]) {
+        newVal[category] = {};
+      }
 
       var allYears = _.uniq(_.map(
         _.select(allBadges().badges.val(), function (badge) {
@@ -270,7 +273,7 @@ var Badge = React.createClass({
 
       _.forEach(allYears, function (year) {
         newVal[category][year] = false;
-      })
+      });
 
       allBadges().shouldRender.set(newVal);
     });
