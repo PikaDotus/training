@@ -26,7 +26,7 @@ var Profile = React.createClass({
 
     return {
       showUnearned: query().showUnearned ? true : false,
-      desiredYear:  new Date().getFullYear(),
+      desiredYear:  2016,
     };
   },
 
@@ -80,7 +80,7 @@ var Profile = React.createClass({
             </div>
             <div className="small-3 columns end">
               <label>
-                <select id="change-year" onChange={this.switchYear} defaultValue={new Date().getFullYear()}>
+                <select id="change-year" onChange={this.switchYear} defaultValue={2016}>
                   {_.map(allYears, function (year) {
                     if (year === 0) {
                       return <option value={year} key={'year-' + year}>Perpetual</option>;
